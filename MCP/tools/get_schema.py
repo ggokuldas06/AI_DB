@@ -25,12 +25,6 @@ DSN = "postgresql://aidb_user:aidb_pass@localhost:5432/sales_db"
 #             return [dict(row) for row in cur.fetchall()]
 
 
-def get_schema(sql : str=QUERY, params=None) -> list[dict]:
-    with psycopg2.connect(DSN) as conn:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute(sql, params)
-            return [dict(row) for row in cur.fetchall()]
-        
 QUERY="""
         WITH columns AS (
             SELECT
@@ -105,3 +99,10 @@ QUERY="""
         LEFT JOIN row_counts rc ON rc.table_name = col.table_name
         ORDER BY col.table_name, col.col_pos;
     """
+
+def get_schema(sql : str=QUERY, params=None) -> list[dict]:
+    with psycopg2.connect(DSN) as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(sql, params)
+            return [dict(row) for row in cur.fetchall()]
+        
