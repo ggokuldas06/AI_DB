@@ -1,0 +1,6 @@
+mcp[cli]
+fastmcp
+httpx
+uvicorn
+starlette
+psycopg2-binary
