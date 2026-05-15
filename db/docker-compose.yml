@@ -14,6 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./materialized_views.sql:/docker-entrypoint-initdb.d/03_materialized_views.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U aidb_user -d sales_db"]
       interval: 5s
