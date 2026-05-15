@@ -4,7 +4,7 @@ from langchain.agents import create_agent
 
 MCP_SERVER_URL = "http://localhost:8000/mcp"
 
-QUERY = "Get schema"
+QUERY = "What are the top 5 customers by total amount spent?"
 
 async def main():
     client = MultiServerMCPClient(
@@ -22,7 +22,10 @@ async def main():
     agent=create_agent(
         model="google_genai:gemini-2.5-flash-lite",
         tools=tool_list,
-        system_prompt="You are an agent that returns the schema of a PostgreSQL database. Always use the provided tools to get the data, never make up data on your own.",
+        system_prompt="You are an agent that creates perfect PostgreSQL queries. use the given tools to get teh database " \
+        "schema and then write the query to answer the user's question. Always use the tools to get the schema and never try " \
+        "to write a query without knowing the schema. Always use the tools to get the schema and never try to write a query without knowing the sc" \
+        "hema. Always use the tools to get the schema and never try to write a query without knowing the schema.",
     )
 
     result=await agent.ainvoke({"messages":[{"role":"user","content":QUERY}]})
