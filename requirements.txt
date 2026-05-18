@@ -9,3 +9,4 @@ psycopg2-binary
 langchain-mcp-adapters
 langchain
 langchain-google-genai
+langchain-groq

@@ -14,7 +14,7 @@ class ReportState(TypedDict):
 
 def make_planner_node(tools):
     agent = create_agent(
-        model="google_genai:gemini-2.0-flash-lite",
+        model="groq:llama-3.1-8b-instant",
         tools=[],
     )
 
@@ -85,7 +85,6 @@ def make_executor_node(tools):
 
 def make_reporter_node():
     agent = create_agent(model="ollama:llama3.1:8b", tools=[])
-
     async def reporter_node(state: ReportState) -> dict:
         print("[reporter] generating final report...")
 
@@ -102,16 +101,26 @@ def make_reporter_node():
             f"### {r['name']}\n{compact(r['data'])}" for r in state["results"]
         )
         prompt = f"""
-        The user asked for: {state["user_request"]}
+You are a senior business analyst. Write a sharp, data-driven report. No filler, no generic advice.
 
-        Query results:
-        {results_block}
+User request: {state["user_request"]}
 
-        Write a professional analytical report with:
-        - Executive Summary
-        - Key Metrics and KPIs
-        - Insights
-        - Conclusion
+Raw query results:
+{results_block}
+
+Rules:
+- Every claim must reference a specific number from the data above.
+- Compare values: name the top, name the bottom, calculate the gap or %.
+- Highlight anomalies or surprising patterns if any.
+- Recommendations must be specific and tied to the numbers, not generic.
+- Use markdown: ## for sections, **bold** for key numbers, bullet points for lists.
+- Be concise. No padding sentences.
+
+Sections to include:
+## Executive Summary
+## Key Metrics (table or bullets with actual numbers)
+## Insights (comparative, specific)
+## Recommendations (data-backed)
         """
         response = await agent.ainvoke({"messages": [{"role": "user", "content": prompt}]})
         return {"report": response["messages"][-1].content}
