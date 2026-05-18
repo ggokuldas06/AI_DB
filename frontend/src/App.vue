@@ -37,7 +37,11 @@ async function send() {
       body: JSON.stringify(body),
     })
     const data = await response.json()
-    messages.value.push({ type: 'result', content: data.result })
+    if (!response.ok) {
+      messages.value.push({ type: 'error', content: data.error || 'Request blocked.' })
+    } else {
+      messages.value.push({ type: 'result', content: data.result })
+    }
     scrollToBottom()
   } catch (e) {
     messages.value.push({ type: 'error', content: e.message })

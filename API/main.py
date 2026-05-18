@@ -10,6 +10,8 @@ from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "AGENT"))
 
+from gaurdrails import GuardrailsMiddleware
+
 from query_agent import run_query
 from graph import run_report
 
@@ -22,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(GuardrailsMiddleware)
 
 class QueryRequest(BaseModel):
     question: str
