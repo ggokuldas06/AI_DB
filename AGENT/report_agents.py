@@ -14,7 +14,7 @@ class ReportState(TypedDict):
 
 def make_planner_node(tools):
     agent = create_agent(
-        model="groq:llama-3.1-8b-instant",
+        model="google_genai:gemini-2.0-flash-lite",
         tools=[],
     )
 
@@ -70,10 +70,10 @@ def make_executor_node(tools):
             result = await run_tool.ainvoke({"sql": task["sql"]})
             rows = [json.loads(item["text"]) for item in result] if isinstance(result, list) and result and isinstance(result[0], dict) and "text" in result[0] else result
             summary = json.dumps(rows, indent=2)
-            print(f"[executor] ✓ {task['name']} — {len(rows)} rows")
+            print(f"[executor] - pass -  {task['name']} — {len(rows)} rows")
         except Exception as e:
             summary = f"Query failed: {str(e)[:120]}"
-            print(f"[executor] ✗ {task['name']} — skipped: {str(e)[:80]}")
+            print(f"[executor] - fail - {task['name']} — skipped: {str(e)[:80]}")
 
         return {
             "results": state["results"] + [{"name": task["name"], "data": summary}],

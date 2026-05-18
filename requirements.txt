@@ -1,5 +1,7 @@
+python-dotenv
 mcp[cli]
 fastmcp
+fastapi
 httpx
 uvicorn
 starlette

@@ -27,3 +27,11 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Logs
+*.log

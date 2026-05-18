@@ -1,10 +1,14 @@
+import os
 import psycopg2
 import psycopg2.extras
 import json
 from datetime import date, datetime
 from decimal import Decimal
+from dotenv import load_dotenv, find_dotenv
 
-DSN = "postgresql://aidb_user:aidb_pass@localhost:5432/sales_db"
+load_dotenv(find_dotenv())
+
+DSN = os.environ["DATABASE_URL"]
 
 
 # def serialize(obj):
