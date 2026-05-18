@@ -1,5 +1,6 @@
 <script setup>
 import { ref, nextTick } from 'vue'
+import { marked } from 'marked'
 
 const mode = ref('query')
 const input = ref('')
@@ -91,7 +92,7 @@ function switchMode(m) {
           <span class="msg-text">{{ msg.content }}</span>
         </template>
         <template v-else-if="msg.type === 'result'">
-          <pre class="msg-text">{{ msg.content }}</pre>
+          <div class="msg-text markdown" v-html="marked(msg.content)"></div>
         </template>
         <template v-else-if="msg.type === 'error'">
           <span class="msg-text">Error: {{ msg.content }}</span>
@@ -330,6 +331,19 @@ textarea:disabled {
   background: #333;
   color: #ccc;
 }
+
+.markdown { line-height: 1.7; color: #c8c8c8; }
+.markdown h1, .markdown h2, .markdown h3 { color: #e0e0e0; font-weight: 600; margin: 1em 0 0.4em; }
+.markdown h2 { font-size: 15px; border-bottom: 1px solid #1e1e1e; padding-bottom: 4px; }
+.markdown h3 { font-size: 14px; }
+.markdown strong { color: #e8e8e8; font-weight: 600; }
+.markdown ul, .markdown ol { padding-left: 1.4em; margin: 0.4em 0; }
+.markdown li { margin: 0.2em 0; }
+.markdown p { margin: 0.5em 0; }
+.markdown code { background: #111; padding: 1px 5px; border-radius: 3px; font-family: 'SF Mono', monospace; font-size: 12px; }
+.markdown table { border-collapse: collapse; width: 100%; margin: 0.6em 0; font-size: 13px; }
+.markdown th { color: #888; font-weight: 500; text-align: left; padding: 4px 8px; border-bottom: 1px solid #222; }
+.markdown td { padding: 4px 8px; border-bottom: 1px solid #111; }
 
 .send-btn:disabled {
   opacity: 0.3;
