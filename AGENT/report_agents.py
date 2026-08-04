@@ -3,6 +3,7 @@ from typing import TypedDict
 
 from langchain.agents import create_agent
 
+from sem_cache import llmcache
 
 class ReportState(TypedDict):
     user_request: str
@@ -14,7 +15,6 @@ class ReportState(TypedDict):
 
 def make_planner_node(tools):
     schema_tool = [t for t in tools if t.name == "get_schema_tool"]
-
     agent = create_agent(
         model="groq:llama-3.1-8b-instant",
         tools=schema_tool,
@@ -33,11 +33,15 @@ def make_planner_node(tools):
 
     async def planner_node(state: ReportState) -> dict:
         print(f"[planner] {state['user_request']}")
-        r = await agent.ainvoke({"messages": [{"role": "user", "content": state["user_request"]}]})
-        c = r["messages"][-1].content
-        planned_queries = json.loads(c[c.find("["):c.rfind("]") + 1])
-        print(f"[planner] {len(planned_queries)} queries planned")
-        return {"planned_queries": planned_queries, "current_index": 0, "results": []}
+        if llmcache.has(state["user_request"]):
+            print("[planner] cache hit")
+            return {"planned_queries": llmcache.get(state["user_request"]), "current_index": 0, "results": []}
+        else:
+            r = await agent.ainvoke({"messages": [{"role": "user", "content": state["user_request"]}]})
+            c = r["messages"][-1].content
+            planned_queries = json.loads(c[c.find("["):c.rfind("]") + 1])
+            print(f"[planner] {len(planned_queries)} queries planned")
+            return {"planned_queries": planned_queries, "current_index": 0, "results": []}
 
     return planner_node
 
@@ -59,21 +63,24 @@ def make_executor_node(tools):
         idx = state["current_index"]
         task = state["planned_queries"][idx]
         print(f"[executor] {idx + 1}/{len(state['planned_queries'])} {task['name']}")
+        if llmcache.has(task["sql"]):
+            print("[executor] cache hit")
+            summary = llmcache.get(task["sql"])
+        else:
+            try:
+                r = await agent.ainvoke({
+                    "messages": [{"role": "user", "content": f"Execute this SQL and return the results:\n{task['sql']}"}]
+                })
+                summary = r["messages"][-1].content
+                print(f"[executor] - pass - {task['name']}")
+            except Exception as e:
+                summary = f"Query failed: {str(e)[:120]}"
+                print(f"[executor] - fail - {task['name']} — {str(e)[:80]}")
 
-        try:
-            r = await agent.ainvoke({
-                "messages": [{"role": "user", "content": f"Execute this SQL and return the results:\n{task['sql']}"}]
-            })
-            summary = r["messages"][-1].content
-            print(f"[executor] - pass - {task['name']}")
-        except Exception as e:
-            summary = f"Query failed: {str(e)[:120]}"
-            print(f"[executor] - fail - {task['name']} — {str(e)[:80]}")
-
-        return {
-            "results": state["results"] + [{"name": task["name"], "data": summary}],
-            "current_index": idx + 1,
-        }
+            return {
+                "results": state["results"] + [{"name": task["name"], "data": summary}],
+                "current_index": idx + 1,
+            }
 
     return executor_node
 
